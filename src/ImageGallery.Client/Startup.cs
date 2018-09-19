@@ -1,4 +1,5 @@
 ﻿using ImageGallery.Client.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -48,6 +49,9 @@ namespace ImageGallery.Client
                 options.SaveTokens = true;
                 options.ClientSecret = "secret";
                 options.GetClaimsFromUserInfoEndpoint = true;
+                options.ClaimActions.Remove("amr");
+                options.ClaimActions.DeleteClaim("sid");
+                options.ClaimActions.DeleteClaim("idp");
             });
         }
 
