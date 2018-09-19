@@ -66,10 +66,10 @@ namespace Voltis.IDP
                     {
                         "https://localhost:44347/signin-oidc"
                     },
-                    //PostLogoutRedirectUris = new List<string>()
-                    //{
-                    //    "https://localhost:44347/signout-callback-oidc"
-                    //},
+                    PostLogoutRedirectUris = new List<string>()
+                    {
+                        "https://localhost:44347/signout-callback-oidc"
+                    },
                     AllowedScopes =
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
