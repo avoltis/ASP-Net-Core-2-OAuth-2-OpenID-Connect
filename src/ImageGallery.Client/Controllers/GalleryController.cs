@@ -1,6 +1,7 @@
 ﻿using ImageGallery.Client.Services;
 using ImageGallery.Client.ViewModels;
 using ImageGallery.Model;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -162,6 +163,12 @@ namespace ImageGallery.Client.Controllers
             }
 
             throw new Exception($"A problem happened while calling the API: {response.ReasonPhrase}");
-        }               
+        }           
+        
+        public async Task Logout()
+        {
+            //Clears the local cookie ("Cookies" must match name from scheme)
+            await HttpContext.SignOutAsync("Cookies");
+        }
     }
 }
