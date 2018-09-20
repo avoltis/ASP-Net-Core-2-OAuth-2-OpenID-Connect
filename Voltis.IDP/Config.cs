@@ -66,6 +66,15 @@ namespace Voltis.IDP
                       };
         }
 
+        //api-related resources (scopes)
+        public static IEnumerable<ApiResource> GetApiResources()
+        {
+            return new List<ApiResource>
+            {
+                new ApiResource("imagegalleryapi", "Image Gallery API")
+            };
+        }
+
         public static IEnumerable<Client> GetClients()
         {
             return new List<Client>()
@@ -88,7 +97,8 @@ namespace Voltis.IDP
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address,
-                        "roles"
+                        "roles",
+                        "imagegalleryapi"
                     },
                     ClientSecrets =
                     {
