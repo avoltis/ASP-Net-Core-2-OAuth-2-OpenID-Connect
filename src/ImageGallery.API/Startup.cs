@@ -21,21 +21,21 @@ namespace ImageGallery.API
             Configuration = configuration;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
-        
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-             services.AddMvc();
+            services.AddMvc();
 
             services.AddAuthentication(
                 IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
                     options.Authority = "https://localhost:44340/";
-                    options.ApiName = "imagegallery";
+                    options.ApiName = "imagegalleryapi";
                 });
-        
+
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
@@ -47,7 +47,7 @@ namespace ImageGallery.API
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, 
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env,
             ILoggerFactory loggerFactory, GalleryContext galleryContext)
         {
             if (env.IsDevelopment())
@@ -91,9 +91,9 @@ namespace ImageGallery.API
                     .ForMember(m => m.OwnerId, options => options.Ignore());
             });
 
-            AutoMapper.Mapper.AssertConfigurationIsValid();            
+            AutoMapper.Mapper.AssertConfigurationIsValid();
 
-            app.UseMvc(); 
+            app.UseMvc();
         }
     }
 }

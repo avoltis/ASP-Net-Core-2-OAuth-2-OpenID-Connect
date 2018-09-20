@@ -45,6 +45,11 @@ namespace ImageGallery.Client.Controllers
 
                 return View(galleryIndexViewModel);
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
+                    response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return RedirectToAction("AccessDenied", "Authorization");
+            }
 
             throw new Exception($"A problem happened while calling the API: {response.ReasonPhrase}");
         }
@@ -120,6 +125,7 @@ namespace ImageGallery.Client.Controllers
             throw new Exception($"A problem happened while calling the API: {response.ReasonPhrase}");
         }
 
+       // [Authorize(Roles = "PayingUser")]
         public IActionResult AddImage()
         {
             return View();
@@ -127,6 +133,7 @@ namespace ImageGallery.Client.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+      //  [Authorize(Roles = "PayingUser")]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
         {
             if (!ModelState.IsValid)
@@ -169,12 +176,10 @@ namespace ImageGallery.Client.Controllers
 
             throw new Exception($"A problem happened while calling the API: {response.ReasonPhrase}");
         }
-
         [Authorize(Roles = "PayingUser")]
         public async Task<IActionResult> OrderFrame()
         {
             var discoveryClient = new DiscoveryClient("https://localhost:44340/");
-
             var metaDataResponse = await discoveryClient.GetAsync();
 
             var userInfoClient = new UserInfoClient(metaDataResponse.UserInfoEndpoint);
