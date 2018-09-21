@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Voltis.IDP.Services;
 
 namespace Voltis.IDP.Controllers.Accounts
 {
@@ -33,18 +34,19 @@ namespace Voltis.IDP.Controllers.Accounts
         private readonly IClientStore _clientStore;
         private readonly IAuthenticationSchemeProvider _schemeProvider;
         private readonly IEventService _events;
+        public readonly IVoltisUserRepository _voltisUserRepository;
 
         public AccountController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IAuthenticationSchemeProvider schemeProvider,
             IEventService events,
-            TestUserStore users = null)
+            IVoltisUserRepository voltisUserRepository)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
             // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-            _users = users ?? new TestUserStore(TestUsers.Users);
-
+            _voltisUserRepository = voltisUserRepository;
+            //_users = users ?? new TestUserStore(TestUsers.Users);
             _interaction = interaction;
             _clientStore = clientStore;
             _schemeProvider = schemeProvider;
@@ -108,10 +110,9 @@ namespace Voltis.IDP.Controllers.Accounts
 
             if (ModelState.IsValid)
             {
-                // validate username/password against in-memory store
-                if (_users.ValidateCredentials(model.Username, model.Password))
+                if (_voltisUserRepository.AreUserCredentialsValid(model.Username, model.Password))
                 {
-                    var user = _users.FindByUsername(model.Username);
+                    var user = _voltisUserRepository.GetUserByUsername(model.Username);
                     await _events.RaiseAsync(new UserLoginSuccessEvent(user.Username, user.SubjectId, user.Username));
 
                     // only set explicit expiration here if user chooses "remember me". 
@@ -167,7 +168,7 @@ namespace Voltis.IDP.Controllers.Accounts
             return View(vm);
         }
 
-        
+
         /// <summary>
         /// Show logout page
         /// </summary>
