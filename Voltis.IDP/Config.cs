@@ -97,6 +97,8 @@ namespace Voltis.IDP
                     ClientId = "imagegalleryclient",
                     AllowedGrantTypes = GrantTypes.Hybrid,
                     AccessTokenType =AccessTokenType.Reference, //tokens are being validatied on each req
+
+                    RequireConsent = false, // require consent on all scopes screen
                     //IdentityTokenLifetime = ..
                     //AuthorizationCodeLifetime = ..
                     //AccessTokenLifetime = 60,
