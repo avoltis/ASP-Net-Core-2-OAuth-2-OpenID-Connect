@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace IdentityServer4.Quickstart.UI
+namespace Voltis.IDP.Controllers.Home
 {
     [SecurityHeaders]
     [AllowAnonymous]

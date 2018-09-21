@@ -12,8 +12,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading.Tasks;
+using Voltis.IDP.Controllers.Accounts;
 
-namespace IdentityServer4.Quickstart.UI
+namespace Voltis.IDP.Controllers.Consent
 {
     /// <summary>
     /// This controller processes the consent UI

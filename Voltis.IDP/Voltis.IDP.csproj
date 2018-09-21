@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Views\Account\" />
+    <Folder Include="Views\Consent\" />
+    <Folder Include="Views\Grants\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
