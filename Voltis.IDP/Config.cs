@@ -80,7 +80,10 @@ namespace Voltis.IDP
             return new List<ApiResource>
             {
                 new ApiResource("imagegalleryapi", "Image Gallery API",
-                new List<string>(){"role"})
+                new List<string>() { "role" })
+                {
+                    ApiSecrets = {new Secret("apisecret".Sha256()) }
+                }
             };
         }
 
@@ -93,6 +96,7 @@ namespace Voltis.IDP
                     ClientName = "Image Gallery",
                     ClientId = "imagegalleryclient",
                     AllowedGrantTypes = GrantTypes.Hybrid,
+                    AccessTokenType =AccessTokenType.Reference, //tokens are being validatied on each req
                     //IdentityTokenLifetime = ..
                     //AuthorizationCodeLifetime = ..
                     //AccessTokenLifetime = 60,
