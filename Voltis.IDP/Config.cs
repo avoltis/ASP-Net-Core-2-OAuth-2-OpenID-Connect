@@ -93,6 +93,13 @@ namespace Voltis.IDP
                     ClientName = "Image Gallery",
                     ClientId = "imagegalleryclient",
                     AllowedGrantTypes = GrantTypes.Hybrid,
+                    //IdentityTokenLifetime = ..
+                    //AuthorizationCodeLifetime = ..
+                    //AccessTokenLifetime = 60,
+                    AllowOfflineAccess = true,
+                    //AbsoluteRefreshTokenLifetime = ..
+                    //RefreshTokenExpiration = TokenExpiration.Sliding,
+                    UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris = new List<string>()
                     {
                         "https://localhost:44347/signin-oidc"
