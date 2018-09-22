@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Mvc;
 using Voltis.IDP.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Voltis.IDP.Controllers.UserRegistration;
 
 namespace Voltis.IDP.Controllers.UserRegistration
 {
@@ -24,10 +22,14 @@ namespace Voltis.IDP.Controllers.UserRegistration
         }
 
         [HttpGet]
-        public IActionResult RegisterUser(string returnUrl)
+        public IActionResult RegisterUser(RegistrationInputModel registrationInputModel)
         {
             var vm = new RegisterUserViewModel()
-            { ReturnUrl = returnUrl };
+            {
+                ReturnUrl = registrationInputModel.ReturnUrl,
+                Provider = registrationInputModel.Provider,
+                ProviderUserId = registrationInputModel.ProviderUserId
+            };
             return View(vm);
         }
 
@@ -48,6 +50,18 @@ namespace Voltis.IDP.Controllers.UserRegistration
                 userToCreate.Claims.Add(new Entities.UserClaim("email", model.Email));
                 userToCreate.Claims.Add(new Entities.UserClaim("subscriptionlevel", "FreeUser"));
 
+                //if we are provisioning a user via external login, we must add the provider 
+                // and user id at the provider to this user's login
+
+                if (model.IsProvisioningFromExternal)
+                {
+                    userToCreate.Logins.Add(new Entities.UserLogin()
+                    {
+                        LoginProvider = model.Provider,
+                        ProviderKey = model.ProviderUserId
+                    });
+                }
+
                 // add it through the repository
                 _voltisUserRepository.AddUser(userToCreate);
 
@@ -56,8 +70,11 @@ namespace Voltis.IDP.Controllers.UserRegistration
                     throw new Exception($"Creating a user failed");
                 }
 
-                 await HttpContext.SignInAsync(userToCreate.SubjectId, userToCreate.Username);
-
+                if (!model.IsProvisioningFromExternal)
+                {
+                    await HttpContext.SignInAsync(userToCreate.SubjectId, userToCreate.Username);
+                }
+                
                 //continue with the flow
                 if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
                 {

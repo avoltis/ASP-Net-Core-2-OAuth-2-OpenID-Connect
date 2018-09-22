@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Voltis.IDP.Services;
 
 namespace Voltis.IDP.Controllers.Accounts
 {
@@ -20,7 +21,7 @@ namespace Voltis.IDP.Controllers.Accounts
     [AllowAnonymous]
     public class ExternalController : Controller
     {
-        private readonly TestUserStore _users;
+        public readonly IVoltisUserRepository _voltisUserRepository;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
@@ -29,11 +30,11 @@ namespace Voltis.IDP.Controllers.Accounts
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IEventService events,
-            TestUserStore users = null)
+            IVoltisUserRepository voltisUserRepository = null)
         {
             // if the TestUserStore is not in DI, then we'll just use the global users collection
             // this is where you would plug in your own custom identity management library (e.g. ASP.NET Identity)
-            _users = users ?? new TestUserStore(TestUsers.Users);
+            _voltisUserRepository = voltisUserRepository;
 
             _interaction = interaction;
             _clientStore = clientStore;
@@ -90,14 +91,26 @@ namespace Voltis.IDP.Controllers.Accounts
                 throw new Exception("External authentication error");
             }
 
+            // retrieve return URL
+            var returnUrl = result.Properties.Items["returnUrl"] ?? "~/";
+
             // lookup our user and external provider info
             var (user, provider, providerUserId, claims) = FindUserFromExternalProvider(result);
+
             if (user == null)
             {
                 // this might be where you might initiate a custom workflow for user registration
                 // in this sample we don't show how that would be done, as our sample implementation
                 // simply auto-provisions new external user
-                user = AutoProvisionUser(provider, providerUserId, claims);
+
+                var returnUrlAfterRegistration =
+                    Url.Action("Callback", new { returnUrl = returnUrl });
+
+                var continueWithUrl = Url.Action("RegisterUser", "UserRegistration" 
+                    , new { returnUrl = returnUrlAfterRegistration, provider = provider, providerUserId = providerUserId });
+
+                return Redirect(continueWithUrl);
+                //user = AutoProvisionUser(provider, providerUserId, claims);
             }
 
             // this allows us to collect any additonal claims or properties
@@ -115,9 +128,6 @@ namespace Voltis.IDP.Controllers.Accounts
 
             // delete temporary cookie used during external authentication
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
-
-            // retrieve return URL
-            var returnUrl = result.Properties.Items["returnUrl"] ?? "~/";
 
             // check if external login is in the context of an OIDC request
             var context = await _interaction.GetAuthorizationContextAsync(returnUrl);
@@ -181,7 +191,7 @@ namespace Voltis.IDP.Controllers.Accounts
             }
         }
 
-        private (TestUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
+        private (Entities.User user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -200,16 +210,16 @@ namespace Voltis.IDP.Controllers.Accounts
             var providerUserId = userIdClaim.Value;
 
             // find external user
-            var user = _users.FindByExternalProvider(provider, providerUserId);
+            var user = _voltisUserRepository.GetUserByProvider(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
         }
 
-        private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
-        {
-            var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
-            return user;
-        }
+        //private Entities.User AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
+        //{
+        //    var user = _voltisUserRepository.AutoProvisionUser(provider, providerUserId, claims.ToList());
+        //    return user;
+        //}
 
         private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
         {

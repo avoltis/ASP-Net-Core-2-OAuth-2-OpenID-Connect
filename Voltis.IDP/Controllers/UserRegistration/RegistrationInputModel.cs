@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Marvin.IDP.Controllers.UserRegistration
+namespace Voltis.IDP.Controllers.UserRegistration
 {
     public class RegistrationInputModel
     {

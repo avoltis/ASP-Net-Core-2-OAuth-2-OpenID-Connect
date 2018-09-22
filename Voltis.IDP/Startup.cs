@@ -36,6 +36,11 @@ namespace Voltis.IDP
 
             services.AddScoped<IVoltisUserRepository, VoltisUserRepository>();
 
+            services.Configure<IISOptions>(options => {
+                options.AuthenticationDisplayName = "Windows";
+                options.AutomaticAuthentication = true;
+            });
+
             services.AddMvc();
 
             services.AddIdentityServer()
