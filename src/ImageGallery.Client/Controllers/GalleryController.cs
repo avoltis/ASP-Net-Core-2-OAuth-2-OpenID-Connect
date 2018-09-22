@@ -45,9 +45,8 @@ namespace ImageGallery.Client.Controllers
 
                 return View(galleryIndexViewModel);
             }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized ||
-                    response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+              {
                 return RedirectToAction("AccessDenied", "Authorization");
             }
 
