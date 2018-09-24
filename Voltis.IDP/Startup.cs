@@ -12,6 +12,8 @@ using Voltis.IDP.Entities;
 using Voltis.IDP.Services;
 using IdentityServer4;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using System.Reflection;
+using IdentityServer4.EntityFramework.DbContexts;
 
 namespace Voltis.IDP
 {
@@ -38,6 +40,11 @@ namespace Voltis.IDP
 
             services.AddScoped<IVoltisUserRepository, VoltisUserRepository>();
 
+            var identityServerDataDBConnectionString = Configuration["connectionStrings:identityServerDataDbConnectionString"];
+
+            var migrationAssembly = typeof(Startup)
+                .GetTypeInfo().Assembly.GetName().Name;
+
             services.Configure<IISOptions>(options =>
             {
                 options.AuthenticationDisplayName = "Windows";
@@ -49,27 +56,31 @@ namespace Voltis.IDP
             services.AddIdentityServer()
                 .AddDeveloperSigningCredential()
                 .AddVoltisUserStore()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApiResources())
-                .AddInMemoryClients(Config.GetClients());
+                .AddConfigurationStore(opt => opt.ConfigureDbContext = builder =>
+                builder.UseSqlServer(identityServerDataDBConnectionString,
+                options => options.MigrationsAssembly(migrationAssembly)));
 
             services.AddAuthentication()
                 .AddFacebook("Facebook", options =>
                    {
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                       options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
 
-                    options.ClientId = "1611375052299796";
-                    options.ClientSecret = "c8f7c91f8add736867044816eb7e46d7";
-                });
+                       options.ClientId = "1611375052299796";
+                       options.ClientSecret = "c8f7c91f8add736867044816eb7e46d7";
+                   });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, VoltisUserContext voltisUserContext)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, VoltisUserContext voltisUserContext,
+            ConfigurationDbContext configurationDbContext)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            configurationDbContext.Database.Migrate();
+            configurationDbContext.EnsureSeedDAtaForContext();
 
             voltisUserContext.Database.Migrate();
             voltisUserContext.EnsureSeedDataForContext();
