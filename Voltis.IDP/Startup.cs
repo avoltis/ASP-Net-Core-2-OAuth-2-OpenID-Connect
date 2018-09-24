@@ -58,6 +58,9 @@ namespace Voltis.IDP
                 .AddVoltisUserStore()
                 .AddConfigurationStore(opt => opt.ConfigureDbContext = builder =>
                 builder.UseSqlServer(identityServerDataDBConnectionString,
+                options => options.MigrationsAssembly(migrationAssembly)))
+                .AddOperationalStore(opt => opt.ConfigureDbContext = builder =>
+                builder.UseSqlServer(identityServerDataDBConnectionString,
                 options => options.MigrationsAssembly(migrationAssembly)));
 
             services.AddAuthentication()
@@ -72,7 +75,7 @@ namespace Voltis.IDP
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, VoltisUserContext voltisUserContext,
-            ConfigurationDbContext configurationDbContext)
+            ConfigurationDbContext configurationDbContext, PersistedGrantDbContext persistedGrantDbContext)
         {
             if (env.IsDevelopment())
             {
@@ -81,6 +84,8 @@ namespace Voltis.IDP
 
             configurationDbContext.Database.Migrate();
             configurationDbContext.EnsureSeedDAtaForContext();
+
+            persistedGrantDbContext.Database.Migrate();
 
             voltisUserContext.Database.Migrate();
             voltisUserContext.EnsureSeedDataForContext();
