@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Voltis.IDP.Entities;
 using Voltis.IDP.Services;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication.Facebook;
 
 namespace Voltis.IDP
 {
@@ -36,7 +38,8 @@ namespace Voltis.IDP
 
             services.AddScoped<IVoltisUserRepository, VoltisUserRepository>();
 
-            services.Configure<IISOptions>(options => {
+            services.Configure<IISOptions>(options =>
+            {
                 options.AuthenticationDisplayName = "Windows";
                 options.AutomaticAuthentication = true;
             });
@@ -49,6 +52,15 @@ namespace Voltis.IDP
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
                 .AddInMemoryClients(Config.GetClients());
+
+            services.AddAuthentication()
+                .AddFacebook("Facebook", options =>
+                   {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+
+                    options.ClientId = "1611375052299796";
+                    options.ClientSecret = "c8f7c91f8add736867044816eb7e46d7";
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,6 +75,7 @@ namespace Voltis.IDP
             voltisUserContext.EnsureSeedDataForContext();
 
             app.UseIdentityServer();
+
             app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
         }
